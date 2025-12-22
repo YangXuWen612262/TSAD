@@ -168,3 +168,5 @@ result_anomaly_detection.txt
 scripts/augmentation/
 run_anylearn.py
 environment.txt
+!output_log/
+!output_log/*.log

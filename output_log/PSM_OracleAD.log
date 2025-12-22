@@ -1,0 +1,98 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           PSM_OracleAD        Model:              OracleAD            
+
+[1mData Loader[0m
+  Data:               PSM                 Root Path:          ./dataset/PSM       
+  Data Path:          PSM.csv             Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      0.25                
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             25                  Dec In:             7                   
+  C Out:              7                   d model:            64                  
+  n heads:            8                   e layers:           2                   
+  d layers:           2                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       20                  Batch Size:         1024                
+  Patience:           3                   Learning Rate:      0.0005              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_PSM_OracleAD_OracleAD_PSM_ftM_sl10_ll48_pl0_dm64_nh8_el2_dl2_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+test: (87841, 25)
+train: (132481, 25)
+train 132472
+Epoch: 1, Cost: 0.5752029590881788
+Updating learning rate to 0.0005
+Epoch: 2, Cost: 0.7940389034839777
+Updating learning rate to 0.00025
+Epoch: 3, Cost: 0.32137203216552734
+Updating learning rate to 0.000125
+Epoch: 4, Cost: 0.27512492342637135
+Updating learning rate to 6.25e-05
+Epoch: 5, Cost: 0.2583717050460669
+Updating learning rate to 3.125e-05
+Epoch: 6, Cost: 0.2505921691656113
+Updating learning rate to 1.5625e-05
+Epoch: 7, Cost: 0.24676012763610253
+Updating learning rate to 7.8125e-06
+Epoch: 8, Cost: 0.24482590544682284
+Updating learning rate to 3.90625e-06
+Epoch: 9, Cost: 0.2438436394700637
+Updating learning rate to 1.953125e-06
+Epoch: 10, Cost: 0.24327589399539506
+Updating learning rate to 9.765625e-07
+Epoch: 11, Cost: 0.24297008239305937
+Updating learning rate to 4.8828125e-07
+Epoch: 12, Cost: 0.24285947554386578
+Updating learning rate to 2.44140625e-07
+Epoch: 13, Cost: 0.24276312876206177
+Updating learning rate to 1.220703125e-07
+Epoch: 14, Cost: 0.24275931154306118
+Updating learning rate to 6.103515625e-08
+Epoch: 15, Cost: 0.24250970070178693
+Updating learning rate to 3.0517578125e-08
+Epoch: 16, Cost: 0.2426020179803555
+Updating learning rate to 1.52587890625e-08
+Epoch: 17, Cost: 0.24259237154172017
+Updating learning rate to 7.62939453125e-09
+Epoch: 18, Cost: 0.24253412450735384
+Updating learning rate to 3.814697265625e-09
+Epoch: 19, Cost: 0.24296515068182578
+Updating learning rate to 1.9073486328125e-09
+Epoch: 20, Cost: 0.2427033054140898
+Updating learning rate to 9.5367431640625e-10
+>>>>>>>testing : anomaly_detection_PSM_OracleAD_OracleAD_PSM_ftM_sl10_ll48_pl0_dm64_nh8_el2_dl2_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test: (87841, 25)
+train: (132481, 25)
+test 87832
+Labels shape: (87832,), Scores shape: (87832,)
+Calculating metrics...
+AUC-ROC: 0.6699, AUC-PR: 0.5184
+------------------------------
+Best F1: 0.4510
+Precision: 0.3601
+Recall: 0.6033
+Threshold: 0.6614
+------------------------------
