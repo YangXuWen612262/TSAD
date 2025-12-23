@@ -1,0 +1,95 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           GCAD_SMD            Model:              GCAD                
+
+[1mData Loader[0m
+  Data:               SMD                 Root Path:          ./dataset/SMD       
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      0.25                
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             38                  Dec In:             7                   
+  C Out:              38                  d model:            128                 
+  n heads:            8                   e layers:           3                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         128                 
+  Patience:           3                   Learning Rate:      0.001               
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_GCAD_SMD_GCAD_SMD_ftM_sl100_ll48_pl1_dm128_nh8_el3_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 7084
+val 1416
+Epoch: 1 cost time: 1.510157585144043
+Epoch: 1 | Train Loss: 0.2332202 Vali Loss: 0.0650591
+Validation loss decreased (inf --> 0.065059).  Saving model ...
+Epoch: 2 cost time: 0.8333661556243896
+Epoch: 2 | Train Loss: 0.0433360 Vali Loss: 0.0300612
+Validation loss decreased (0.065059 --> 0.030061).  Saving model ...
+Epoch: 3 cost time: 0.8869833946228027
+Epoch: 3 | Train Loss: 0.0241736 Vali Loss: 0.0170146
+Validation loss decreased (0.030061 --> 0.017015).  Saving model ...
+Epoch: 4 cost time: 0.9325404167175293
+Epoch: 4 | Train Loss: 0.0176662 Vali Loss: 0.0124580
+Validation loss decreased (0.017015 --> 0.012458).  Saving model ...
+Epoch: 5 cost time: 0.9198269844055176
+Epoch: 5 | Train Loss: 0.0132180 Vali Loss: 0.0091537
+Validation loss decreased (0.012458 --> 0.009154).  Saving model ...
+Epoch: 6 cost time: 0.9259800910949707
+Epoch: 6 | Train Loss: 0.0104555 Vali Loss: 0.0095108
+EarlyStopping counter: 1 out of 3
+Epoch: 7 cost time: 0.885094165802002
+Epoch: 7 | Train Loss: 0.0086272 Vali Loss: 0.0067131
+Validation loss decreased (0.009154 --> 0.006713).  Saving model ...
+Epoch: 8 cost time: 0.8475487232208252
+Epoch: 8 | Train Loss: 0.0072936 Vali Loss: 0.0058353
+Validation loss decreased (0.006713 --> 0.005835).  Saving model ...
+Epoch: 9 cost time: 0.906073808670044
+Epoch: 9 | Train Loss: 0.0063521 Vali Loss: 0.0047847
+Validation loss decreased (0.005835 --> 0.004785).  Saving model ...
+Epoch: 10 cost time: 0.9079751968383789
+Epoch: 10 | Train Loss: 0.0056724 Vali Loss: 0.0038007
+Validation loss decreased (0.004785 --> 0.003801).  Saving model ...
+>>>>>>>testing : anomaly_detection_GCAD_SMD_GCAD_SMD_ftM_sl100_ll48_pl1_dm128_nh8_el3_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Calibrating normal causal patterns...
+train 7084
+Calibration finished.
+test 7084
+Testing...
+  0%|          | 0/56 [00:00<?, ?it/s]
+>>> DEBUG INFO <<<
+A_test max: 0.392589
+S_c sample: 445.8808
+S_t sample: 0.0000
+>>> END DEBUG <<<
+
+  4%|▎         | 2/56 [00:00<00:05, 10.71it/s]  7%|▋         | 4/56 [00:00<00:04, 11.58it/s] 11%|█         | 6/56 [00:00<00:04, 11.25it/s] 14%|█▍        | 8/56 [00:00<00:04, 10.27it/s] 18%|█▊        | 10/56 [00:00<00:04, 10.24it/s] 21%|██▏       | 12/56 [00:01<00:04, 10.56it/s] 25%|██▌       | 14/56 [00:01<00:03, 10.66it/s] 29%|██▊       | 16/56 [00:01<00:03, 10.94it/s] 32%|███▏      | 18/56 [00:01<00:03, 10.56it/s] 36%|███▌      | 20/56 [00:01<00:03, 10.50it/s] 39%|███▉      | 22/56 [00:02<00:03, 10.18it/s] 43%|████▎     | 24/56 [00:02<00:02, 10.77it/s] 46%|████▋     | 26/56 [00:02<00:02, 11.67it/s] 50%|█████     | 28/56 [00:02<00:02, 12.18it/s] 54%|█████▎    | 30/56 [00:02<00:02, 12.52it/s] 57%|█████▋    | 32/56 [00:02<00:02, 11.28it/s] 61%|██████    | 34/56 [00:03<00:01, 11.32it/s] 64%|██████▍   | 36/56 [00:03<00:01, 12.24it/s] 68%|██████▊   | 38/56 [00:03<00:01, 12.63it/s] 71%|███████▏  | 40/56 [00:03<00:01, 13.22it/s] 75%|███████▌  | 42/56 [00:03<00:01, 13.36it/s] 79%|███████▊  | 44/56 [00:03<00:00, 13.34it/s] 82%|████████▏ | 46/56 [00:03<00:00, 13.66it/s] 86%|████████▌ | 48/56 [00:04<00:00, 13.47it/s] 89%|████████▉ | 50/56 [00:04<00:00, 13.34it/s] 93%|█████████▎| 52/56 [00:04<00:00, 13.35it/s] 96%|█████████▋| 54/56 [00:04<00:00, 13.36it/s]100%|██████████| 56/56 [00:04<00:00, 13.58it/s]100%|██████████| 56/56 [00:04<00:00, 11.86it/s]
+Test AUC: 0.4085
+Searching best threshold...
+>>>>>>> Final Results <<<<<<<
+Best Threshold: 0.0000
+Precision: 0.0607
+Recall:    1.0000
+F1-Score:  0.1144

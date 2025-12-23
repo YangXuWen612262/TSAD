@@ -9,6 +9,7 @@ from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
 # from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
 from exp.exp_oracle_ad import Exp_OracleAD  
+from exp.exp_GCAD import Exp_GCAD
 from utils.print_args import print_args
 import random
 import numpy as np
@@ -53,10 +54,10 @@ if __name__ == '__main__':
     # anomaly detection task
     parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%%)')
 
-    # ================= [新增] OracleAD 特有参数 =================
+    #oracleAD
     parser.add_argument('--lambda_recon', type=float, default=0.1, help='OracleAD: weight for reconstruction loss')
     parser.add_argument('--lambda_dev', type=float, default=3.0, help='OracleAD: weight for deviation loss')
-    # ==========================================================
+
 
     # model define
     parser.add_argument('--expand', type=int, default=2, help='expansion factor for Mamba')
@@ -189,15 +190,15 @@ if __name__ == '__main__':
         Exp = Exp_Short_Term_Forecast
     elif args.task_name == 'imputation':
         Exp = Exp_Imputation
-    # ================= [修改] 实验选择逻辑 =================
+
     elif args.task_name == 'anomaly_detection':
         if args.model == 'OracleAD':
-            # 如果指定任务是异常检测，且模型是 OracleAD，则使用自定义实验类
             Exp = Exp_OracleAD
+        elif args.model=='GCAD':
+            Exp = Exp_GCAD
         else:
-            # 否则使用默认的异常检测实验类
             Exp = Exp_Anomaly_Detection
-    # ======================================================
+
     elif args.task_name == 'classification':
         Exp = Exp_Classification
     # elif args.task_name == 'zero_shot_forecast':
