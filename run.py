@@ -8,8 +8,9 @@ from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
 # from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
-from exp.exp_oracle_ad import Exp_OracleAD  
+from exp.exp_OracleAD import Exp_OracleAD 
 from exp.exp_GCAD import Exp_GCAD
+from exp.exp_G_OracleAD import Exp_G_OracleAD
 from utils.print_args import print_args
 import random
 import numpy as np
@@ -57,6 +58,16 @@ if __name__ == '__main__':
     #oracleAD
     parser.add_argument('--lambda_recon', type=float, default=0.1, help='OracleAD: weight for reconstruction loss')
     parser.add_argument('--lambda_dev', type=float, default=3.0, help='OracleAD: weight for deviation loss')
+
+    #G_OracleAD
+    parser.add_argument('--lambda_pred', type=float, default=0.1)
+    parser.add_argument('--lambda_grad', type=float, default=0.05)
+    parser.add_argument('--beta_grad', type=float, default=4.0)
+    parser.add_argument('--use_grad_soft', type=int, default=1)
+    parser.add_argument('--dist_norm', type=int, default=1)
+    parser.add_argument('--score_point', type=str, default='last')
+    parser.add_argument('--log_step', type=int, default=100)
+
 
 
     # model define
@@ -196,6 +207,8 @@ if __name__ == '__main__':
             Exp = Exp_OracleAD
         elif args.model=='GCAD':
             Exp = Exp_GCAD
+        elif args.model=='G_OracleAD':
+            Exp = Exp_G_OracleAD
         else:
             Exp = Exp_Anomaly_Detection
 

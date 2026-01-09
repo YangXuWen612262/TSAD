@@ -3,7 +3,7 @@ import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
-    WPMixer, MultiPatchFormer, KANAD,GCAD
+    WPMixer, MultiPatchFormer, KANAD, GCAD, G_OracleAD, OracleAD
 
 
 class Exp_Basic(object):
@@ -40,7 +40,10 @@ class Exp_Basic(object):
             'WPMixer': WPMixer,
             'MultiPatchFormer': MultiPatchFormer,
             'KANAD': KANAD,
-            'GCAD':GCAD
+
+            'GCAD':GCAD,
+            'OracleAD':OracleAD,
+            'G_OracleAD':G_OracleAD
         }
         if args.model == 'Mamba':
             print('Please make sure you have successfully installed mamba_ssm')

@@ -1,0 +1,82 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           SMD                 Model:              Autoformer          
+
+[1mData Loader[0m
+  Data:               SMD                 Root Path:          ./dataset/SMD       
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      0.5                 
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             38                  Dec In:             7                   
+  C Out:              38                  d model:            128                 
+  n heads:            8                   e layers:           3                   
+  d layers:           1                   d FF:               128                 
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         128                 
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_SMD_Autoformer_SMD_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 7084
+val 1416
+test 7084
+Epoch: 1 cost time: 5.47133731842041
+Epoch: 1, Steps: 56 | Train Loss: 1.2001458 Vali Loss: 0.7282428 Test Loss: 2.0267068
+Validation loss decreased (inf --> 0.728243).  Saving model ...
+Updating learning rate to 0.0001
+Epoch: 2 cost time: 3.6194119453430176
+Epoch: 2, Steps: 56 | Train Loss: 1.0653500 Vali Loss: 0.6767345 Test Loss: 1.9510733
+Validation loss decreased (0.728243 --> 0.676734).  Saving model ...
+Updating learning rate to 5e-05
+Epoch: 3 cost time: 3.623382568359375
+Epoch: 3, Steps: 56 | Train Loss: 1.0093712 Vali Loss: 0.6725696 Test Loss: 1.9341280
+Validation loss decreased (0.676734 --> 0.672570).  Saving model ...
+Updating learning rate to 2.5e-05
+Epoch: 4 cost time: 3.9216227531433105
+Epoch: 4, Steps: 56 | Train Loss: 0.9959752 Vali Loss: 0.6470260 Test Loss: 1.9281364
+Validation loss decreased (0.672570 --> 0.647026).  Saving model ...
+Updating learning rate to 1.25e-05
+Epoch: 5 cost time: 3.68119478225708
+Epoch: 5, Steps: 56 | Train Loss: 0.9869005 Vali Loss: 0.6608242 Test Loss: 1.9254495
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 6.25e-06
+Epoch: 6 cost time: 3.7396531105041504
+Epoch: 6, Steps: 56 | Train Loss: 0.9876692 Vali Loss: 0.6475145 Test Loss: 1.9241076
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 3.125e-06
+Epoch: 7 cost time: 3.7130789756774902
+Epoch: 7, Steps: 56 | Train Loss: 0.9810052 Vali Loss: 0.6603758 Test Loss: 1.9234550
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : anomaly_detection_SMD_Autoformer_SMD_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 7084
+train 7084
+Threshold : 13.58768524169865
+pred:    (708400,)
+gt:      (708400,)
+pred:  (708400,)
+gt:    (708400,)
+Accuracy : 0.9781, Precision : 0.7845, Recall : 0.6510, F-score : 0.7116 

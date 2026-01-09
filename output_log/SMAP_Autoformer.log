@@ -1,0 +1,136 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           SMAP                Model:              Autoformer          
+
+[1mData Loader[0m
+  Data:               SMAP                Root Path:          ./dataset/SMAP      
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      1.0                 
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             25                  Dec In:             7                   
+  C Out:              25                  d model:            128                 
+  n heads:            8                   e layers:           3                   
+  d layers:           1                   d FF:               128                 
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       3                   Batch Size:         128                 
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_SMAP_Autoformer_SMAP_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+test: (427617, 25)
+train: (135183, 25)
+train 135084
+test: (427617, 25)
+train: (135183, 25)
+val 26938
+test: (427617, 25)
+train: (135183, 25)
+test 427518
+	iters: 100, epoch: 1 | loss: 1.4711033
+	speed: 0.0350s/iter; left time: 107.4036s
+	iters: 200, epoch: 1 | loss: 0.7965614
+	speed: 0.0229s/iter; left time: 67.8715s
+	iters: 300, epoch: 1 | loss: 0.5847934
+	speed: 0.0216s/iter; left time: 62.0649s
+	iters: 400, epoch: 1 | loss: 0.6728250
+	speed: 0.0222s/iter; left time: 61.4315s
+	iters: 500, epoch: 1 | loss: 0.4793103
+	speed: 0.0224s/iter; left time: 59.6819s
+	iters: 600, epoch: 1 | loss: 0.3604476
+	speed: 0.0214s/iter; left time: 54.8811s
+	iters: 700, epoch: 1 | loss: 0.4312143
+	speed: 0.0207s/iter; left time: 51.0471s
+	iters: 800, epoch: 1 | loss: 0.3584381
+	speed: 0.0206s/iter; left time: 48.7094s
+	iters: 900, epoch: 1 | loss: 0.7699676
+	speed: 0.0207s/iter; left time: 47.0678s
+	iters: 1000, epoch: 1 | loss: 0.4461813
+	speed: 0.0200s/iter; left time: 43.4031s
+Epoch: 1 cost time: 23.921290397644043
+Epoch: 1, Steps: 1056 | Train Loss: 0.6791732 Vali Loss: 0.2171976 Test Loss: 0.6207829
+Validation loss decreased (inf --> 0.217198).  Saving model ...
+Updating learning rate to 0.0001
+	iters: 100, epoch: 2 | loss: 0.6281605
+	speed: 0.6677s/iter; left time: 1344.1624s
+	iters: 200, epoch: 2 | loss: 0.3296058
+	speed: 0.0221s/iter; left time: 42.3395s
+	iters: 300, epoch: 2 | loss: 0.3112897
+	speed: 0.0235s/iter; left time: 42.5219s
+	iters: 400, epoch: 2 | loss: 0.9055498
+	speed: 0.0228s/iter; left time: 39.1317s
+	iters: 500, epoch: 2 | loss: 0.2989277
+	speed: 0.0218s/iter; left time: 35.1453s
+	iters: 600, epoch: 2 | loss: 0.2948287
+	speed: 0.0217s/iter; left time: 32.8895s
+	iters: 700, epoch: 2 | loss: 0.6403531
+	speed: 0.0221s/iter; left time: 31.2602s
+	iters: 800, epoch: 2 | loss: 0.2788959
+	speed: 0.0233s/iter; left time: 30.6294s
+	iters: 900, epoch: 2 | loss: 0.1971693
+	speed: 0.0226s/iter; left time: 27.4137s
+	iters: 1000, epoch: 2 | loss: 0.3069139
+	speed: 0.0220s/iter; left time: 24.4933s
+Epoch: 2 cost time: 23.790552377700806
+Epoch: 2, Steps: 1056 | Train Loss: 0.4752670 Vali Loss: 0.1531433 Test Loss: 0.5505337
+Validation loss decreased (0.217198 --> 0.153143).  Saving model ...
+Updating learning rate to 5e-05
+	iters: 100, epoch: 3 | loss: 0.2795980
+	speed: 0.6932s/iter; left time: 663.4238s
+	iters: 200, epoch: 3 | loss: 0.5045791
+	speed: 0.0215s/iter; left time: 18.4502s
+	iters: 300, epoch: 3 | loss: 0.2406218
+	speed: 0.0228s/iter; left time: 17.2503s
+	iters: 400, epoch: 3 | loss: 0.4083285
+	speed: 0.0217s/iter; left time: 14.2284s
+	iters: 500, epoch: 3 | loss: 0.2528571
+	speed: 0.0207s/iter; left time: 11.5528s
+	iters: 600, epoch: 3 | loss: 0.2164999
+	speed: 0.0225s/iter; left time: 10.3030s
+	iters: 700, epoch: 3 | loss: 0.3572769
+	speed: 0.0214s/iter; left time: 7.6325s
+	iters: 800, epoch: 3 | loss: 0.2127814
+	speed: 0.0222s/iter; left time: 5.6976s
+	iters: 900, epoch: 3 | loss: 0.7606882
+	speed: 0.0229s/iter; left time: 3.6029s
+	iters: 1000, epoch: 3 | loss: 0.1806489
+	speed: 0.0230s/iter; left time: 1.3116s
+Epoch: 3 cost time: 23.75595235824585
+Epoch: 3, Steps: 1056 | Train Loss: 0.3966033 Vali Loss: 0.1285026 Test Loss: 0.5177437
+Validation loss decreased (0.153143 --> 0.128503).  Saving model ...
+Updating learning rate to 2.5e-05
+>>>>>>>testing : anomaly_detection_SMAP_Autoformer_SMAP_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test: (427617, 25)
+train: (135183, 25)
+test 427518
+test: (427617, 25)
+train: (135183, 25)
+train 135084
+Threshold : 0.9212213331460917
+pred:    (42751800,)
+gt:      (42751800,)
+pred:  (42751800,)
+gt:    (42751800,)
+Accuracy : 0.9441, Precision : 0.9099, Recall : 0.6246, F-score : 0.7408 

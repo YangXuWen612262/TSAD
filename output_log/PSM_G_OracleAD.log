@@ -1,0 +1,98 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           PSM_GOracleAD       Model:              G_OracleAD          
+
+[1mData Loader[0m
+  Data:               PSM                 Root Path:          ./dataset/PSM       
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      1.0                 
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             25                  Dec In:             7                   
+  C Out:              25                  d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       3                   Batch Size:         128                 
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_PSM_GOracleAD_G_OracleAD_PSM_ftM_sl100_ll48_pl0_dm128_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+test: (87841, 25)
+train: (132481, 25)
+train 132382
+test: (87841, 25)
+train: (132481, 25)
+val 26398
+	iters: 100/1035, epoch: 1 | loss: 0.536089 (base 0.534044, recon 0.473211, pred 0.608330, reg 0.040900) | speed: 0.1093s/iter, left: 102.3s
+	iters: 200/1035, epoch: 1 | loss: 0.251410 (base 0.242500, recon 0.219378, pred 0.231218, reg 0.178186) | speed: 0.0910s/iter, left: 76.1s
+	iters: 300/1035, epoch: 1 | loss: 0.284676 (base 0.274893, recon 0.246932, pred 0.279613, reg 0.195658) | speed: 0.0912s/iter, left: 67.1s
+	iters: 400/1035, epoch: 1 | loss: 0.270341 (base 0.260314, recon 0.233038, pred 0.272754, reg 0.200550) | speed: 0.0931s/iter, left: 59.2s
+	iters: 500/1035, epoch: 1 | loss: 0.369553 (base 0.359142, recon 0.324469, pred 0.346731, reg 0.208218) | speed: 0.0948s/iter, left: 50.8s
+	iters: 600/1035, epoch: 1 | loss: 0.302336 (base 0.291340, recon 0.265968, pred 0.253720, reg 0.219924) | speed: 0.0952s/iter, left: 41.5s
+	iters: 700/1035, epoch: 1 | loss: 0.571447 (base 0.560761, recon 0.236889, pred 3.238722, reg 0.213713) | speed: 0.0950s/iter, left: 31.9s
+	iters: 800/1035, epoch: 1 | loss: 0.279606 (base 0.268048, recon 0.238156, pred 0.298922, reg 0.231154) | speed: 0.0946s/iter, left: 22.3s
+	iters: 900/1035, epoch: 1 | loss: 0.307926 (base 0.295945, recon 0.263432, pred 0.325130, reg 0.239624) | speed: 0.0912s/iter, left: 12.4s
+	iters: 1000/1035, epoch: 1 | loss: 0.207083 (base 0.196267, recon 0.175276, pred 0.209913, reg 0.216312) | speed: 0.0938s/iter, left: 3.4s
+Epoch: 1 cost time: 104.7s | Train Loss: 0.360252 Vali Loss: 0.223913
+Validation loss decreased (inf --> 0.223913).  Saving model ...
+Updating learning rate to 0.0001
+	iters: 100/1035, epoch: 2 | loss: 0.232189 (base 0.221103, recon 0.192497, pred 0.286064, reg 0.221716) | speed: 0.1951s/iter, left: 182.6s
+	iters: 200/1035, epoch: 2 | loss: 0.260107 (base 0.248772, recon 0.224559, pred 0.242124, reg 0.226711) | speed: 0.0962s/iter, left: 80.4s
+	iters: 300/1035, epoch: 2 | loss: 0.289553 (base 0.278264, recon 0.234290, pred 0.439746, reg 0.225767) | speed: 0.0947s/iter, left: 69.7s
+	iters: 400/1035, epoch: 2 | loss: 0.188415 (base 0.178319, recon 0.158462, pred 0.198570, reg 0.201911) | speed: 0.0921s/iter, left: 58.5s
+	iters: 500/1035, epoch: 2 | loss: 0.207099 (base 0.197721, recon 0.176952, pred 0.207690, reg 0.187573) | speed: 0.0922s/iter, left: 49.4s
+	iters: 600/1035, epoch: 2 | loss: 0.297377 (base 0.288197, recon 0.238125, pred 0.500722, reg 0.183595) | speed: 0.0919s/iter, left: 40.1s
+	iters: 700/1035, epoch: 2 | loss: 0.189235 (base 0.180742, recon 0.163207, pred 0.175352, reg 0.169870) | speed: 0.0919s/iter, left: 30.9s
+	iters: 800/1035, epoch: 2 | loss: 0.178915 (base 0.171485, recon 0.156447, pred 0.150379, reg 0.148605) | speed: 0.0880s/iter, left: 20.8s
+	iters: 900/1035, epoch: 2 | loss: 0.306220 (base 0.298033, recon 0.267673, pred 0.303598, reg 0.163739) | speed: 0.0895s/iter, left: 12.2s
+	iters: 1000/1035, epoch: 2 | loss: 0.222501 (base 0.215293, recon 0.191878, pred 0.234148, reg 0.144155) | speed: 0.0898s/iter, left: 3.2s
+Epoch: 2 cost time: 102.5s | Train Loss: 0.193246 Vali Loss: 0.167062
+Validation loss decreased (0.223913 --> 0.167062).  Saving model ...
+Updating learning rate to 5e-05
+	iters: 100/1035, epoch: 3 | loss: 0.191975 (base 0.185207, recon 0.164262, pred 0.209450, reg 0.135346) | speed: 0.2010s/iter, left: 188.1s
+	iters: 200/1035, epoch: 3 | loss: 0.163095 (base 0.156900, recon 0.131205, pred 0.256946, reg 0.123905) | speed: 0.0905s/iter, left: 75.7s
+	iters: 300/1035, epoch: 3 | loss: 0.163975 (base 0.158148, recon 0.134666, pred 0.234820, reg 0.116557) | speed: 0.0904s/iter, left: 66.5s
+	iters: 400/1035, epoch: 3 | loss: 0.190113 (base 0.183855, recon 0.165959, pred 0.178955, reg 0.125165) | speed: 0.0901s/iter, left: 57.3s
+	iters: 500/1035, epoch: 3 | loss: 0.132073 (base 0.126468, recon 0.112015, pred 0.144532, reg 0.112087) | speed: 0.0872s/iter, left: 46.7s
+	iters: 600/1035, epoch: 3 | loss: 0.174090 (base 0.168482, recon 0.154043, pred 0.144394, reg 0.112148) | speed: 0.0897s/iter, left: 39.1s
+	iters: 700/1035, epoch: 3 | loss: 0.223594 (base 0.217863, recon 0.192529, pred 0.253339, reg 0.114613) | speed: 0.0857s/iter, left: 28.8s
+	iters: 800/1035, epoch: 3 | loss: 0.170335 (base 0.165220, recon 0.149352, pred 0.158676, reg 0.102296) | speed: 0.0888s/iter, left: 20.9s
+	iters: 900/1035, epoch: 3 | loss: 0.210960 (base 0.205469, recon 0.179898, pred 0.255707, reg 0.109820) | speed: 0.0888s/iter, left: 12.1s
+	iters: 1000/1035, epoch: 3 | loss: 0.126798 (base 0.122073, recon 0.108122, pred 0.139509, reg 0.094495) | speed: 0.0900s/iter, left: 3.2s
+Epoch: 3 cost time: 100.2s | Train Loss: 0.173559 Vali Loss: 0.161120
+Validation loss decreased (0.167062 --> 0.161120).  Saving model ...
+Updating learning rate to 2.5e-05
+>>>>>>>testing : anomaly_detection_PSM_GOracleAD_G_OracleAD_PSM_ftM_sl100_ll48_pl0_dm128_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test: (87841, 25)
+train: (132481, 25)
+train 132382
+test: (87841, 25)
+train: (132481, 25)
+val 26398
+test: (87841, 25)
+train: (132481, 25)
+test 87742
+[Test] anomaly_ratio=1.00% threshold=1.607991 | P=0.9938 R=0.8345 F1=0.9072
