@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=3
 
 python -u run.py \
   --task_name anomaly_detection \
@@ -19,5 +19,5 @@ python -u run.py \
   --lambda_dev 0.1 \
   --anomaly_ratio 1 \
   --batch_size 128 \
-  --train_epochs 3 \
+  --train_epochs 30 \
   --patience 3

@@ -7,7 +7,7 @@ from utils.tools import adjustment
 import torch
 import torch.nn as nn
 from torch import optim
-
+import inspect
 from exp.exp_basic import Exp_Basic
 from data_provider.data_factory import data_provider
 
@@ -69,6 +69,32 @@ class Exp_G_OracleAD(Exp_Basic):
         self.score_point = str(getattr(args, "score_point", "last")) # last / mean
 
         self.criterion = nn.MSELoss(reduction="mean")
+
+        self._dbg_reg_print = 0
+        self._dbg_g_none = 0
+
+
+        print("lambda_grad:", getattr(args, "lambda_grad", None),"use_grad_soft:", getattr(args, "use_grad_soft", None))
+        print(
+                f"[Init] lambda_pred={self.lambda_pred} lambda_grad={self.lambda_grad} beta_grad={self.beta_grad} "
+                f"use_grad_soft={self.use_grad_soft} dist_norm={self.dist_norm} score_point={self.score_point} "
+                f"grad_eps={self.grad_eps}"
+            )
+
+
+    def _model_forward(self, batch_x):
+        """
+        兼容两种模型 forward:
+        - forward(self, x)  -> 只吃 batch_x
+        - forward(self, x, _, _, _) -> TSLib transformer 风格
+        """
+        sig = inspect.signature(self.model.forward)
+        n_params = len(sig.parameters)  # 包含 self
+
+        if n_params >= 5:
+            return self.model(batch_x, None, None, None)
+        else:
+            return self.model(batch_x)
 
     def _build_model(self):
         """
@@ -153,6 +179,20 @@ class Exp_G_OracleAD(Exp_Basic):
             create_graph=False,
             allow_unused=True
         )[0]
+
+        # ---- debug: check grad wrt A ----
+        if self._dbg_reg_print < 5:  # 只打印前5次，避免刷屏
+            if g is None:
+                self._dbg_g_none += 1
+                print(f"[Reg-Debug] g is None (count={self._dbg_g_none}) -> reg=0")
+            else:
+                g_abs_mean = g.detach().abs().mean().item()
+                g_abs_max = g.detach().abs().max().item()
+                A_mean = A.detach().mean().item()
+                A_std = A.detach().std().item()
+                print(f"[Reg-Debug] |g| mean={g_abs_mean:.3e} max={g_abs_max:.3e} | A mean={A_mean:.4f} std={A_std:.4f}")
+            self._dbg_reg_print += 1
+
 
         if g is None:
             return base_loss.new_tensor(0.0)
@@ -268,14 +308,32 @@ class Exp_G_OracleAD(Exp_Basic):
                 if (i + 1) % int(getattr(self.args, "log_step", 100)) == 0:
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * (train_steps - i)
+
+                    # -------- extra stats (no grad) --------
+                    with torch.no_grad():
+                        # 输入统计（在 _forward_and_loss 已经有 x_in，但这里 batch_x 也能快速看）
+                        bx_mean = batch_x.float().mean().item()
+                        bx_std = batch_x.float().std().item()
+
+                    reg_contrib = (self.lambda_grad * reg).item() if torch.is_tensor(reg) else float(self.lambda_grad) * float(reg)
+
                     print(
                         f"\titers: {i+1}/{train_steps}, epoch: {epoch+1} | "
-                        f"loss: {total_loss.item():.6f} (base {base_loss.item():.6f}, "
-                        f"recon {recon_loss.item():.6f}, pred {pred_loss.item():.6f}, reg {reg.item():.6f}) | "
-                        f"speed: {speed:.4f}s/iter, left: {left_time:.1f}s"
+                        f"loss={total_loss.item():.6f} "
+                        f"(base={base_loss.item():.6f}, recon={recon_loss.item():.6f}, pred={pred_loss.item():.6f}, "
+                        f"reg={reg.item():.6f}, lambda_grad*reg={reg_contrib:.6f}) | "
+                        f"batch_x(mean/std)={bx_mean:.4f}/{bx_std:.4f} | "
+                        f"speed={speed:.4f}s/iter, left={left_time:.1f}s"
                     )
+
                     iter_count = 0
                     time_now = time.time()
+                # if i == 0:
+                #     print(f"[Test-Debug][Train] batch_x={tuple(batch_x.shape)} recon={tuple(recon.shape)} "
+                #         f"x(mean/std)={batch_x.mean().item():.4f}/{batch_x.std().item():.4f} "
+                #         f"recon(mean/std)={recon.mean().item():.4f}/{recon.std().item():.4f}")
+
+
 
             train_loss = float(np.mean(epoch_losses)) if len(epoch_losses) else 0.0
             vali_loss = self.vali(vali_data, vali_loader)
@@ -336,87 +394,118 @@ class Exp_G_OracleAD(Exp_Basic):
         return np.concatenate(energies, axis=0)
 
     def test(self, setting, test=0):
-        """
-        - 用 train(+val) energy 的分位数做 threshold
-        - 在 test 上算 energy -> pred
-        - adjustment + P/R/F1
-        """
-        # ====== 临时关闭梯度软约束（test阶段只评估，不做训练正则）======
-        old_use = self.use_grad_soft
-        self.use_grad_soft = 0
+        test_data, test_loader = self._get_data(flag='test')
+        train_data, train_loader = self._get_data(flag='train')
 
-        try:
-            train_data, train_loader = self._get_data(flag="train")
-            vali_data, vali_loader = self._get_data(flag="val")
-            test_data, test_loader = self._get_data(flag="test")
+        if test:
+            print('loading model')
+            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth'),
+                                                map_location=self.device))
 
-            # load checkpoint if needed
-            if test == 1:
-                path = os.path.join(self.args.checkpoints, setting)
-                best_model_path = os.path.join(path, "checkpoint.pth")
-                self.model.load_state_dict(torch.load(best_model_path, map_location=self.device))
+        attens_energy = []
+        folder_path = './test_results/' + setting + '/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
-            # 1) threshold from train+val energy
-            train_energy = self._collect_energy(train_loader)
-            val_energy = self._collect_energy(vali_loader)
-            energy_ref = np.concatenate([train_energy, val_energy], axis=0)
+        self.model.eval()
+        self.anomaly_criterion = nn.MSELoss(reduction='none')  # 和默认exp一致：逐元素loss
 
-            anomaly_ratio = float(getattr(self.args, "anomaly_ratio", 1.0))  # percent
-            threshold = np.percentile(energy_ref, 100.0 - anomaly_ratio)
+        # =========================
+        # (1) statistics on train
+        # =========================
+        with torch.no_grad():
+            for i, (batch_x, batch_y) in enumerate(train_loader):
+                batch_x = batch_x.float().to(self.device)
 
-            # 2) test energy
-            test_energy = self._collect_energy(test_loader)
+                outputs = self._model_forward(batch_x)
 
-            # 3) labels
-            gt = None
-            for batch in test_loader:
-                if len(batch) >= 2:
-                    y = batch[1]
-                    if torch.is_tensor(y):
-                        y = y.detach().cpu().numpy()
+                recon = self._get_recon_only(outputs)
 
-                    if y.ndim == 2:
-                        if self.score_point == "mean":
-                            y = (y.mean(axis=1) > 0.5).astype(int)
-                        else:
-                            y = (y[:, -1] > 0.5).astype(int)
-                    elif y.ndim > 2:
-                        y = y.reshape(y.shape[0], -1)
-                        y = (y[:, -1] > 0.5).astype(int)
-                    else:
-                        y = (y > 0.5).astype(int)
+                if i == 0:
+                    print(f"[Test-Debug][Test]  batch_x={tuple(batch_x.shape)} recon={tuple(recon.shape)} "
+                        f"x(mean/std)={batch_x.mean().item():.4f}/{batch_x.std().item():.4f} "
+                        f"recon(mean/std)={recon.mean().item():.4f}/{recon.std().item():.4f}")
 
-                    gt = y if gt is None else np.concatenate([gt, y], axis=0)
-                else:
-                    break
 
-            if gt is None:
-                print("[Warning] No ground-truth labels found from test_loader. Only output threshold and energy stats.")
-                print(f"threshold={threshold:.6f}, test_energy mean={test_energy.mean():.6f}, std={test_energy.std():.6f}")
-                return
+                # 如果你的OracleAD/G_OracleAD内部走的是 [B,N,L]，这里 recon/batch_x 就不是同shape
+                # 但你现在已经能跑通训练，通常你model wrapper会返回 [B,L,C]（和batch_x一致）
+                # 如果确实不一致，取消下面两行注释做转置对齐：
+                # if recon.dim() == 3 and batch_x.dim() == 3 and recon.shape != batch_x.shape:
+                #     # recon [B,C,L] -> [B,L,C]
+                #     recon = recon.transpose(1, 2).contiguous()
 
-            # 4) pred + adjustment
-            pred = (test_energy > threshold).astype(int)
-            gt_adj, pred_adj = adjustment(gt, pred)
+                score = torch.mean(self.anomaly_criterion(batch_x, recon), dim=-1)  # [B,L]
+                score = score.detach().cpu().numpy()
+                attens_energy.append(score)
 
-            # 5) metrics
-            if precision_recall_fscore_support is not None:
-                p, r, f1, _ = precision_recall_fscore_support(gt_adj, pred_adj, average="binary", zero_division=0)
-                print(f"[Test] anomaly_ratio={anomaly_ratio:.2f}% threshold={threshold:.6f} | P={p:.4f} R={r:.4f} F1={f1:.4f}")
-            else:
-                tp = int(((gt_adj == 1) & (pred_adj == 1)).sum())
-                fp = int(((gt_adj == 0) & (pred_adj == 1)).sum())
-                fn = int(((gt_adj == 1) & (pred_adj == 0)).sum())
-                p = tp / (tp + fp + 1e-12)
-                r = tp / (tp + fn + 1e-12)
-                f1 = 2 * p * r / (p + r + 1e-12)
-                print(f"[Test] anomaly_ratio={anomaly_ratio:.2f}% threshold={threshold:.6f} | P={p:.4f} R={r:.4f} F1={f1:.4f}")
+        attens_energy = np.concatenate(attens_energy, axis=0).reshape(-1)
+        train_energy = np.array(attens_energy)
 
-            return
+        # =========================
+        # (2) find threshold
+        # =========================
+        attens_energy = []
+        test_labels = []
+        with torch.no_grad():
+            for i, (batch_x, batch_y) in enumerate(test_loader):
+                batch_x = batch_x.float().to(self.device)
 
-        finally:
-            # ====== 恢复开关 ======
-            self.use_grad_soft = old_use
+                outputs = self._model_forward(batch_x)
+
+                recon = self._get_recon_only(outputs)
+
+                if i == 0:
+                    print(f"[Test-Debug][Test]  batch_x={tuple(batch_x.shape)} recon={tuple(recon.shape)} "
+                        f"x(mean/std)={batch_x.mean().item():.4f}/{batch_x.std().item():.4f} "
+                        f"recon(mean/std)={recon.mean().item():.4f}/{recon.std().item():.4f}")
+
+                # 同上：如果shape不一致可转置
+                # if recon.dim() == 3 and batch_x.dim() == 3 and recon.shape != batch_x.shape:
+                #     recon = recon.transpose(1, 2).contiguous()
+
+                score = torch.mean(self.anomaly_criterion(batch_x, recon), dim=-1)  # [B,L]
+                score = score.detach().cpu().numpy()
+                attens_energy.append(score)
+                test_labels.append(batch_y.detach().cpu().numpy() if torch.is_tensor(batch_y) else batch_y)
+
+        attens_energy = np.concatenate(attens_energy, axis=0).reshape(-1)
+        test_energy = np.array(attens_energy)
+
+        combined_energy = np.concatenate([train_energy, test_energy], axis=0)
+        threshold = np.percentile(combined_energy, 100 - self.args.anomaly_ratio)
+        print("Threshold :", threshold)
+
+        # =========================
+        # (3) evaluation
+        # =========================
+        pred = (test_energy > threshold).astype(int)
+        test_labels = np.concatenate(test_labels, axis=0).reshape(-1)
+        gt = test_labels.astype(int)
+
+        print("pred:   ", pred.shape)
+        print("gt:     ", gt.shape)
+
+        # (4) detection adjustment
+        gt, pred = adjustment(gt, pred)
+
+        pred = np.array(pred)
+        gt = np.array(gt)
+        print("pred: ", pred.shape)
+        print("gt:   ", gt.shape)
+
+        accuracy = accuracy_score(gt, pred)
+        precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary', zero_division=0)
+
+        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+            accuracy, precision, recall, f_score))
+
+        f = open("result_anomaly_detection.txt", 'a')
+        f.write(setting + "  \n")
+        f.write("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+            accuracy, precision, recall, f_score))
+        f.write('\n\n')
+        f.close()
+        return
 
     def _get_recon_only(self, model_outputs):
         """

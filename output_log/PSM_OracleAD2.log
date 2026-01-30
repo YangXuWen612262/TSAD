@@ -1,0 +1,103 @@
+nohup: ignoring input
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          anomaly_detection   Is Training:        1                   
+  Model ID:           PSM_OracleAD        Model:              OracleAD            
+
+[1mData Loader[0m
+  Data:               PSM                 Root Path:          ./dataset/PSM       
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mAnomaly Detection Task[0m
+  Anomaly Ratio:      1.0                 
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             25                  Dec In:             7                   
+  C Out:              25                  d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       30                  Batch Size:         128                 
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : anomaly_detection_PSM_OracleAD_OracleAD_PSM_ftM_sl100_ll48_pl0_dm128_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+test: (87841, 25)
+train: (132481, 25)
+train 132382
+test: (87841, 25)
+train: (132481, 25)
+val 26398
+Epoch 1/30 | train=0.351707 val=0.238622 | time=67.7s
+Validation loss decreased (inf --> 0.238622).  Saving model ...
+Updating learning rate to 0.0001
+Epoch 2/30 | train=0.185427 val=0.167167 | time=67.5s
+Validation loss decreased (0.238622 --> 0.167167).  Saving model ...
+Updating learning rate to 5e-05
+Epoch 3/30 | train=0.169803 val=0.163866 | time=67.9s
+Validation loss decreased (0.167167 --> 0.163866).  Saving model ...
+Updating learning rate to 2.5e-05
+Epoch 4/30 | train=0.165748 val=0.160026 | time=68.0s
+Validation loss decreased (0.163866 --> 0.160026).  Saving model ...
+Updating learning rate to 1.25e-05
+Epoch 5/30 | train=0.163812 val=0.158812 | time=69.3s
+Validation loss decreased (0.160026 --> 0.158812).  Saving model ...
+Updating learning rate to 6.25e-06
+Epoch 6/30 | train=0.163044 val=0.158307 | time=70.1s
+Validation loss decreased (0.158812 --> 0.158307).  Saving model ...
+Updating learning rate to 3.125e-06
+Epoch 7/30 | train=0.162591 val=0.157980 | time=70.1s
+Validation loss decreased (0.158307 --> 0.157980).  Saving model ...
+Updating learning rate to 1.5625e-06
+Epoch 8/30 | train=0.162451 val=0.157835 | time=69.9s
+Validation loss decreased (0.157980 --> 0.157835).  Saving model ...
+Updating learning rate to 7.8125e-07
+Epoch 9/30 | train=0.161857 val=0.157669 | time=70.4s
+Validation loss decreased (0.157835 --> 0.157669).  Saving model ...
+Updating learning rate to 3.90625e-07
+Epoch 10/30 | train=0.162064 val=0.157523 | time=70.1s
+Validation loss decreased (0.157669 --> 0.157523).  Saving model ...
+Updating learning rate to 1.953125e-07
+Epoch 11/30 | train=0.161873 val=0.157453 | time=70.4s
+Validation loss decreased (0.157523 --> 0.157453).  Saving model ...
+Updating learning rate to 9.765625e-08
+Epoch 12/30 | train=0.161520 val=0.157548 | time=70.5s
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 4.8828125e-08
+Epoch 13/30 | train=0.161750 val=0.157455 | time=70.6s
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 2.44140625e-08
+Epoch 14/30 | train=0.161726 val=0.157572 | time=70.7s
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : anomaly_detection_PSM_OracleAD_OracleAD_PSM_ftM_sl100_ll48_pl0_dm128_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test: (87841, 25)
+train: (132481, 25)
+test 87742
+test: (87841, 25)
+train: (132481, 25)
+train 132382
+Threshold : 4.071530828475954
+pred:    (8774200,)
+gt:      (8774200,)
+pred:  (8774200,)
+gt:    (8774200,)
+Accuracy : 0.9488, Precision : 0.9805, Recall : 0.8321, F-score : 0.9002 

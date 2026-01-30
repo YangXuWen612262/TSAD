@@ -1,7 +1,4 @@
 # exp/exp_OracleAD.py
-
-
-
 import os
 import time
 import numpy as np
@@ -10,7 +7,7 @@ from utils.tools import adjustment
 import torch
 import torch.nn as nn
 from torch import optim
-
+import inspect
 from exp.exp_basic import Exp_Basic
 from data_provider.data_factory import data_provider
 
@@ -61,6 +58,20 @@ class Exp_OracleAD(Exp_Basic):
 
         self.criterion = nn.MSELoss(reduction="mean")
         self.score_point = str(getattr(args, "score_point", "last"))  # last/mean（run.py未必有，默认last）
+
+    def _model_forward(self, batch_x):
+        """
+        兼容两种模型 forward:
+        - forward(self, x)  -> 只吃 batch_x
+        - forward(self, x, _, _, _) -> TSLib transformer 风格
+        """
+        sig = inspect.signature(self.model.forward)
+        n_params = len(sig.parameters)  # 包含 self
+
+        if n_params >= 5:
+            return self.model(batch_x, None, None, None)
+        else:
+            return self.model(batch_x)
 
     def _build_model(self):
         model_name = self.args.model
@@ -202,62 +213,114 @@ class Exp_OracleAD(Exp_Basic):
         return np.concatenate(energies, axis=0) if energies else np.array([])
 
     def test(self, setting, test=0):
-        train_data, train_loader = self._get_data(flag="train")
-        vali_data, vali_loader = self._get_data(flag="val")
-        test_data, test_loader = self._get_data(flag="test")
+        test_data, test_loader = self._get_data(flag='test')
+        train_data, train_loader = self._get_data(flag='train')
 
-        if test == 1:
-            path = os.path.join(self.args.checkpoints, setting)
-            best_model_path = os.path.join(path, "checkpoint.pth")
-            self.model.load_state_dict(torch.load(best_model_path, map_location=self.device))
+        if test:
+            print('loading model')
+            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth'),
+                                                map_location=self.device))
 
-        train_energy = self._collect_energy(train_loader)
-        val_energy = self._collect_energy(vali_loader)
-        energy_ref = np.concatenate([train_energy, val_energy], axis=0)
+        attens_energy = []
+        folder_path = './test_results/' + setting + '/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
-        anomaly_ratio = float(getattr(self.args, "anomaly_ratio", 1.0))
-        threshold = np.percentile(energy_ref, 100.0 - anomaly_ratio)
+        self.model.eval()
+        self.anomaly_criterion = nn.MSELoss(reduction='none')  # 和默认exp一致：逐元素loss
 
-        test_energy = self._collect_energy(test_loader)
+        # =========================
+        # (1) statistics on train
+        # =========================
+        with torch.no_grad():
+            for i, (batch_x, batch_y) in enumerate(train_loader):
+                batch_x = batch_x.float().to(self.device)
 
-        # 取label（尽量兼容）
-        gt = None
-        for batch in test_loader:
-            if len(batch) >= 2:
-                y = batch[1]
-                if torch.is_tensor(y):
-                    y = y.detach().cpu().numpy()
+                outputs = self._model_forward(batch_x) if callable(getattr(self.model, "__call__", None)) else self._model_forward(batch_x)
+                recon = self._get_recon_only(outputs)
 
-                if y.ndim == 2:
-                    y = (y[:, -1] > 0.5).astype(int)
-                elif y.ndim > 2:
-                    y = y.reshape(y.shape[0], -1)
-                    y = (y[:, -1] > 0.5).astype(int)
-                else:
-                    y = (y > 0.5).astype(int)
+                # 如果你的OracleAD/G_OracleAD内部走的是 [B,N,L]，这里 recon/batch_x 就不是同shape
+                # 但你现在已经能跑通训练，通常你model wrapper会返回 [B,L,C]（和batch_x一致）
+                # 如果确实不一致，取消下面两行注释做转置对齐：
+                # if recon.dim() == 3 and batch_x.dim() == 3 and recon.shape != batch_x.shape:
+                #     # recon [B,C,L] -> [B,L,C]
+                #     recon = recon.transpose(1, 2).contiguous()
 
-                gt = y if gt is None else np.concatenate([gt, y], axis=0)
-            else:
-                break
+                score = torch.mean(self.anomaly_criterion(batch_x, recon), dim=-1)  # [B,L]
+                score = score.detach().cpu().numpy()
+                attens_energy.append(score)
 
-        if gt is None:
-            print("[Warning] No GT labels found. Only print threshold/stat.")
-            print(f"threshold={threshold:.6f}, test_energy mean={test_energy.mean():.6f}, std={test_energy.std():.6f}")
-            return
+        attens_energy = np.concatenate(attens_energy, axis=0).reshape(-1)
+        train_energy = np.array(attens_energy)
 
+        # =========================
+        # (2) find threshold
+        # =========================
+        attens_energy = []
+        test_labels = []
+        with torch.no_grad():
+            for i, (batch_x, batch_y) in enumerate(test_loader):
+                batch_x = batch_x.float().to(self.device)
+
+                outputs = self._model_forward(batch_x) if callable(getattr(self.model, "__call__", None)) else self._model_forward(batch_x)
+                recon = self._get_recon_only(outputs)
+
+                # 同上：如果shape不一致可转置
+                # if recon.dim() == 3 and batch_x.dim() == 3 and recon.shape != batch_x.shape:
+                #     recon = recon.transpose(1, 2).contiguous()
+
+                score = torch.mean(self.anomaly_criterion(batch_x, recon), dim=-1)  # [B,L]
+                score = score.detach().cpu().numpy()
+                attens_energy.append(score)
+                test_labels.append(batch_y.detach().cpu().numpy() if torch.is_tensor(batch_y) else batch_y)
+
+        attens_energy = np.concatenate(attens_energy, axis=0).reshape(-1)
+        test_energy = np.array(attens_energy)
+
+        combined_energy = np.concatenate([train_energy, test_energy], axis=0)
+        threshold = np.percentile(combined_energy, 100 - self.args.anomaly_ratio)
+        print("Threshold :", threshold)
+
+        # =========================
+        # (3) evaluation
+        # =========================
         pred = (test_energy > threshold).astype(int)
-        gt_adj, pred_adj = adjustment(gt, pred)
+        test_labels = np.concatenate(test_labels, axis=0).reshape(-1)
+        gt = test_labels.astype(int)
 
-        if precision_recall_fscore_support is not None:
-            p, r, f1, _ = precision_recall_fscore_support(gt_adj, pred_adj, average="binary", zero_division=0)
-            print(f"[Test] ratio={anomaly_ratio:.2f}% thr={threshold:.6f} | P={p:.4f} R={r:.4f} F1={f1:.4f}")
-        else:
-            tp = int(((gt_adj == 1) & (pred_adj == 1)).sum())
-            fp = int(((gt_adj == 0) & (pred_adj == 1)).sum())
-            fn = int(((gt_adj == 1) & (pred_adj == 0)).sum())
-            p = tp / (tp + fp + 1e-12)
-            r = tp / (tp + fn + 1e-12)
-            f1 = 2 * p * r / (p + r + 1e-12)
-            print(f"[Test] ratio={anomaly_ratio:.2f}% thr={threshold:.6f} | P={p:.4f} R={r:.4f} F1={f1:.4f}")
+        print("pred:   ", pred.shape)
+        print("gt:     ", gt.shape)
 
-    
+        # (4) detection adjustment
+        gt, pred = adjustment(gt, pred)
+
+        pred = np.array(pred)
+        gt = np.array(gt)
+        print("pred: ", pred.shape)
+        print("gt:   ", gt.shape)
+
+        accuracy = accuracy_score(gt, pred)
+        precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary', zero_division=0)
+
+        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+            accuracy, precision, recall, f_score))
+
+        f = open("result_anomaly_detection.txt", 'a')
+        f.write(setting + "  \n")
+        f.write("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+            accuracy, precision, recall, f_score))
+        f.write('\n\n')
+        f.close()
+        return
+
+    def _get_recon_only(self, model_outputs):
+        """
+        model_outputs can be:
+        - recon tensor
+        - (recon, pred, c_star, A)
+        We only need recon for evaluation.
+        """
+        if isinstance(model_outputs, (tuple, list)):
+            return model_outputs[0]
+        return model_outputs
+
